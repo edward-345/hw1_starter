@@ -39,19 +39,28 @@ def process_data(data, labels):
     	Array with shape (M,) of M labels.
 	"""
 	
-	# Split the dataset of string into train, validation, and test 
-	# Use a 70/15/15 split
-	# train_test_split shuffles the data before splitting it 
-	# Stratify keeps the proportion of labels the same in each split
+	train_X, temp_X, train_Y, temp_Y = train_test_split(data, labels,
+													 test_size = 0.7,
+													 random_state = 67,
+													 stratify = labels)
+	# train_X is 70% of "data" array, train_Y is 70% of "labels" array
 
-	 # Initial change
+	val_X, test_X, val_Y, test_Y = train_test_split(temp_X,
+												 temp_Y,
+												 test_size = 0.5,
+												 random_state = 67,
+												 stratify = temp_Y)
+	# now we have all train, test, val X and Y
+
+	
+
 
 	# Preprocess each dataset of strings into a dataset of feature vectors
 	# using the CountVectorizer function. 
 	# Note, fit the Vectorizer using the training set only, and then
 	# transform the validation and test sets.
 
-	# -- WRITE THE PROCESSING CODE HERE -- 
+	
 
 	# Return the training, validation, and test set inputs and labels
 
@@ -106,6 +115,7 @@ def load_data():
 	labels = np.array([0]*len(real) + [1]*len(fake))
 	return data, labels
 
+view_data = load_data()
 
 def main():
 	data, labels = load_data()
