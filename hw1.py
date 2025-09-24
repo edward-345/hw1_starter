@@ -3,8 +3,10 @@
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
 
 import numpy as np
+import pandas as pd
 import sklearn
 import random
 import math
@@ -40,7 +42,7 @@ def process_data(data, labels):
 	"""
 	
 	train_X, temp_X, train_Y, temp_Y = train_test_split(data, labels,
-													 test_size = 0.7,
+													 test_size = 0.3,
 													 random_state = 67,
 													 stratify = labels)
 	# train_X is 70% of "data" array, train_Y is 70% of "labels" array
@@ -52,20 +54,32 @@ def process_data(data, labels):
 												 stratify = temp_Y)
 	# now we have all train, test, val X and Y
 
-	
-
-
 	# Preprocess each dataset of strings into a dataset of feature vectors
 	# using the CountVectorizer function. 
 	# Note, fit the Vectorizer using the training set only, and then
 	# transform the validation and test sets.
 
+	# Initializing CountVectorizer()
+	vectorizer = CountVectorizer(
+		input = 'content',
+		decode_error = 'strict',
+		token_pattern = r"(?u)\b\w+\b",
+		ngram_range = (1, 2),
+		analyzer = 'word'
+		)
+	
+	# Fitting and transforming train X, Y
+	train_X = vectorizer.fit_transform(train_X)
+	
+	# Transforming test and val X
+	val_X = vectorizer.transform(val_X)
+
+	test_X = vectorizer.transform(test_X)
 	
 
 	# Return the training, validation, and test set inputs and labels
 
-	# -- RETURN THE ARRAYS HERE -- 
-	pass
+	return(train_X, train_Y, val_X, val_Y, test_X, test_Y)
 
 def select_knn_model(train_X, val_X, train_Y, val_Y):
 	"""
@@ -91,9 +105,31 @@ def select_knn_model(train_X, val_X, train_Y, val_Y):
   	best_k : int
     	The best k value according to validation loss.
 	"""
-	pass
+# there are 3266 headlines total 
+# 70% of the headlines are in training so ~2286 headlines
+# using sqrt(N)/2 we should start with k = 24 (23.906 rounded)
+	k = 24
+	model_scores = {}
+	models = {}
+	
+	for i in range(1,k+1):
+		# fitting model for each k = [1, 24]
+		model = KNeighborsClassifier(n_neighbors = i)
+		model.fit(train_X, train_Y)
+		predicted_vals = model.predict(val_X)
 
+		# evluating model fit
+		score = accuracy_score(val_Y, predicted_vals)
 
+		# storing evaluation results
+		model_scores[i] = score
+		models[i] = model
+
+	# find k with highest accuracy score (same as lowest loss score)
+	best_k = max(model_scores, key = model_scores.get)
+	best_model = models[best_k]
+
+	return(best_model, best_k)
 
 # You DO NOT need to complete or modify the code below this line.
 # ===============================================================
